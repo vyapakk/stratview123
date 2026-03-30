@@ -9,6 +9,7 @@ import { AlertCircle, RefreshCw, ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import AppFooter from "@/components/AppFooter";
+import QueryFormTab from "@/components/QueryFormTab";
 
 import { config, TabType } from "./config";
 import { useMarketData } from "./data";
