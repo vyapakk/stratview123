@@ -48,11 +48,11 @@ const QueryFormTab = () => {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <button
-          className="query-tab-trigger fixed right-0 top-1/2 -translate-y-1/2 z-50 flex items-center gap-2 px-3 py-4 rounded-l-lg border border-r-0 border-primary/40 bg-primary text-primary-foreground font-semibold text-sm shadow-lg cursor-pointer transition-transform hover:translate-x-0 translate-x-0"
+          className="query-tab-trigger fixed right-0 top-1/2 -translate-y-1/2 z-50 flex items-center gap-1 sm:gap-2 px-2 py-2 sm:px-3 sm:py-4 rounded-l-lg border border-r-0 border-primary/40 bg-primary text-primary-foreground font-semibold text-xs sm:text-sm shadow-lg cursor-pointer transition-transform hover:translate-x-0 translate-x-0"
           style={{ writingMode: "vertical-rl", textOrientation: "mixed" }}
           aria-label="Got a Query?"
         >
-          <MessageCircleQuestion className="h-5 w-5 rotate-90 mb-1" />
+          <MessageCircleQuestion className="h-4 w-4 sm:h-5 sm:w-5 rotate-90 mb-1" />
           Got a Query?
         </button>
       </SheetTrigger>
