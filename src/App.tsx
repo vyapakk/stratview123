@@ -25,6 +25,7 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <RouteScrollToTop />
+        <QueryFormTab />
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/signup" element={<SignUp />} />
