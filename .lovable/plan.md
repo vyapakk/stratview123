@@ -1,52 +1,32 @@
 
 
-## "Got a Query?" Floating Edge Tab with Form
+## Simplified "Got a Query?" — Zero Dashboard Edits
 
-### What We're Building
-A floating "Got a Query?" tab fixed to the right edge of the screen on every dashboard. It has a subtle blinking/pulsing animation to draw attention. Clicking it opens a slide-out form where users can submit questions to your research analyst team.
+### Problem
+Adding `<QueryFormTab>` to all 25 Dashboard.tsx files is tedious and error-prone.
 
-The form auto-fills Name, Designation, and Company from the user profile (mock data for now), and lets users enter/edit Email, Phone, and their Query.
+### Solution
+Render `QueryFormTab` **once in App.tsx**, inside the `<BrowserRouter>`, and have it auto-detect the current dashboard from the URL using `useLocation` + the existing `dashboardRegistry`.
 
-### Approach — Minimal File Changes
+- On dashboard routes: tab is visible, title is derived from the registry
+- On non-dashboard routes: tab is hidden (renders nothing)
 
-**1 new file** + **1 line added to each of the 25 Dashboard.tsx files** + **1 CSS addition to index.css**.
+### Changes
 
-### Files
+**Modified: `src/components/QueryFormTab.tsx`**
+- Remove the `dashboardTitle` prop
+- Add internal logic: use `useLocation()` to get current path, look up matching entry in `dashboardRegistry`, extract title
+- If no match (not on a dashboard page), return `null`
 
-**New: `src/components/QueryFormTab.tsx`**
-- A fixed-position "Got a Query?" tab on the right edge of the viewport (rotated text, sticking out like a side tab)
-- CSS animation: pulsing glow/border effect to catch the eye
-- On click: opens a Dialog/Sheet with the query form
-- Form fields:
-  - **Name** (pre-filled, read-only) — from mock profile
-  - **Designation** (pre-filled, read-only) — from mock profile
-  - **Company** (pre-filled, read-only) — from mock profile
-  - **Email** (editable, pre-filled from profile)
-  - **Phone** (editable, pre-filled from profile)
-  - **Your Query** (textarea, required)
-- Header message: "Talk to our Research Analyst"
-- Subtitle: "Our team will get in touch within 72 hours"
-- Submit button shows a success toast; form resets query field
-- Passes the current dashboard title (from `config.title`) so the query is contextual
+**Modified: `src/App.tsx`** (1 line)
+- Add `<QueryFormTab />` next to `<Toaster />` and `<Sonner />`, inside `<BrowserRouter>` (so `useLocation` works)
 
-**Modified: `src/index.css`**
-- Add a `@keyframes query-tab-pulse` animation for the blinking/pulsing glow effect
+**Modified: All 25 `src/dashboards/*/Dashboard.tsx`**
+- Remove the `<QueryFormTab dashboardTitle={config.title} />` line and its import (cleanup)
 
-**Modified: Each `src/dashboards/*/Dashboard.tsx` (25 files)**
-- Add one import: `import QueryFormTab from "@/components/QueryFormTab";`
-- Add `<QueryFormTab dashboardTitle={config.title} />` inside the root `<div>`, just before `</div>`
-- This is a single-line addition per file
-
-### Technical Details
-- Uses existing shadcn Sheet component for the slide-out panel
-- Uses existing Input, Textarea, Label, Button components
-- Mock profile data imported from a shared constant (same pattern as MyAccount.tsx)
-- The edge tab uses `fixed right-0 top-1/2` positioning with `writing-mode: vertical-rl` for rotated text
-- Animation: CSS `pulse` keyframe with alternating opacity/box-shadow for a subtle blink effect
-- Fully responsive — tab visible on all screen sizes, form adapts to mobile
-
-### Total changes
-- 1 new shared component
-- 1 CSS keyframe addition
-- 25 single-line insertions (one per dashboard)
+### Total
+- 1 component refactored (self-detecting)
+- 1 line added to App.tsx
+- 25 lines + imports **removed** from dashboards (simplification)
+- Net result: QueryFormTab lives in one place, works everywhere, zero per-dashboard maintenance
 
