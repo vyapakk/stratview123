@@ -78,6 +78,7 @@ const ThermoplasticPrepregDashboard = () => {
 
         <AppFooter variant="dark" sourceText={config.footerText} unitText={config.footerUnit} />
       </main>
+      <QueryFormTab dashboardTitle={config.title} />
     </div>
   );
 };
