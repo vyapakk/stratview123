@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { MessageCircleQuestion, Send, CheckCircle2 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -6,12 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { dashboardRegistry } from "@/dashboards/registry";
 
-/**
- * BACKEND INTEGRATION POINT:
- * Replace mockProfile with actual user data from auth/profile API.
- * Replace handleSubmit with POST /api/queries or similar.
- */
 const mockProfile = {
   name: "John Doe",
   designation: "Research Analyst",
@@ -20,24 +17,24 @@ const mockProfile = {
   phone: "+1 (555) 234-5678",
 };
 
-interface QueryFormTabProps {
-  dashboardTitle: string;
-}
-
-const QueryFormTab = ({ dashboardTitle }: QueryFormTabProps) => {
+const QueryFormTab = () => {
+  const location = useLocation();
+  const match = dashboardRegistry.find((d) => d.routePath === location.pathname);
+  
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState(mockProfile.email);
   const [phone, setPhone] = useState(mockProfile.phone);
   const [query, setQuery] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
+  if (!match) return null;
+
+  const dashboardTitle = match.title;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
-
-    // TODO: POST to backend API
     console.log("Query submitted:", { ...mockProfile, email, phone, query, dashboardTitle });
-
     setSubmitted(true);
     setTimeout(() => {
       toast({ title: "Query Submitted!", description: "Our research analyst will get in touch within 72 hours." });
@@ -80,7 +77,6 @@ const QueryFormTab = ({ dashboardTitle }: QueryFormTabProps) => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Auto-filled read-only fields */}
             <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Your Profile</p>
               <div>
@@ -97,7 +93,6 @@ const QueryFormTab = ({ dashboardTitle }: QueryFormTabProps) => {
               </div>
             </div>
 
-            {/* Editable fields */}
             <div className="space-y-3">
               <div>
                 <Label htmlFor="query-email" className="text-foreground text-sm">Email *</Label>
@@ -109,7 +104,6 @@ const QueryFormTab = ({ dashboardTitle }: QueryFormTabProps) => {
               </div>
             </div>
 
-            {/* Query */}
             <div>
               <Label htmlFor="query-text" className="text-foreground text-sm">Your Query *</Label>
               <Textarea

@@ -14,6 +14,7 @@ import MyAccount from "./pages/MyAccount";
 import Terms from "./pages/Terms";
 import Disclaimer from "./pages/Disclaimer";
 import NotFound from "./pages/NotFound";
+import QueryFormTab from "@/components/QueryFormTab";
 
 const queryClient = new QueryClient();
 
