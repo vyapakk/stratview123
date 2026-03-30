@@ -338,3 +338,22 @@
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
+
+/* Query Tab Pulse Animation */
+@keyframes query-tab-pulse {
+  0%, 100% {
+    box-shadow: 0 0 8px hsl(var(--primary) / 0.4), 0 4px 16px hsl(var(--primary) / 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px hsl(var(--primary) / 0.7), 0 4px 24px hsl(var(--primary) / 0.4);
+  }
+}
+
+.query-tab-trigger {
+  animation: query-tab-pulse 2s ease-in-out infinite;
+}
+
+.query-tab-trigger:hover {
+  animation: none;
+  box-shadow: 0 0 24px hsl(var(--primary) / 0.6);
+}
