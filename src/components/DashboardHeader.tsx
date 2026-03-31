@@ -157,7 +157,8 @@ const DashboardHeader = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut();
     navigate("/");
   };
 
