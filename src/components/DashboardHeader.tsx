@@ -71,6 +71,7 @@ const initialNotifications: Notification[] = [
 
 const DashboardHeader = () => {
   const navigate = useNavigate();
+  const { profile, signOut } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
