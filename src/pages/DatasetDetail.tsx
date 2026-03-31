@@ -10,11 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { categories } from "@/data/datasets";
 import { activeDashboardRoutes } from "@/data/dashboardRoutes";
 import AppFooter from "@/components/AppFooter";
+import { useAccessControl } from "@/hooks/useAccessControl";
 
 const DatasetDetail = () => {
   const { datasetId } = useParams<{ datasetId: string }>();
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const { hasAccess } = useAccessControl();
 
   // Find the dataset and its parent category
   let dataset: { id: string; name: string; dashboards: { id: string; name: string; purchased: boolean }[] } | undefined;
@@ -44,8 +46,14 @@ const DatasetDetail = () => {
     );
   }
 
-  const hasAnyPurchased = dataset.dashboards.some((d) => d.purchased);
-  const purchasedCount = dataset.dashboards.filter((d) => d.purchased).length;
+  // Use dynamic access instead of static purchased flag
+  const dashboardsWithAccess = dataset.dashboards.map(d => ({
+    ...d,
+    purchased: hasAccess(d.id),
+  }));
+
+  const hasAnyPurchased = dashboardsWithAccess.some((d) => d.purchased);
+  const purchasedCount = dashboardsWithAccess.filter((d) => d.purchased).length;
   const Icon = parentCategory.icon;
 
   const iconBgStyles: Record<string, string> = {
@@ -104,7 +112,7 @@ const DatasetDetail = () => {
                   </Badge>
                 )}
                 <span className="text-xs md:text-sm text-primary-foreground/60">
-                  {purchasedCount} of {dataset.dashboards.length} dashboard{dataset.dashboards.length !== 1 ? "s" : ""} unlocked
+                  {purchasedCount} of {dashboardsWithAccess.length} dashboard{dashboardsWithAccess.length !== 1 ? "s" : ""} unlocked
                 </span>
               </div>
             </div>
@@ -126,7 +134,7 @@ const DatasetDetail = () => {
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {dataset.dashboards.map((dashboard, index) => {
+          {dashboardsWithAccess.map((dashboard, index) => {
             const isDashboardPurchased = dashboard.purchased;
             const isActive = isDashboardPurchased && !!activeDashboardRoutes[dashboard.id];
             const isComingSoon = isDashboardPurchased && !activeDashboardRoutes[dashboard.id];

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, User, Mail, Building2, Phone, Briefcase, Pencil, Save, X, Calendar, Lock, Send, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,68 +14,68 @@ import DashboardHeader from "@/components/DashboardHeader";
 import AppFooter from "@/components/AppFooter";
 import { categories } from "@/data/datasets";
 import { useAuth } from "@/hooks/useAuth";
+import { useAccessControl } from "@/hooks/useAccessControl";
 import { supabase } from "@/integrations/supabase/client";
 
-
-// Mock subscriptions — purchased dashboards with validity
-const mockSubscriptions = (() => {
-  const subs: {
-    categoryTitle: string;
-    datasetName: string;
-    dashboardName: string;
-    dashboardId: string;
-    validFrom: string;
-    validTo: string;
-  }[] = [];
-  for (const cat of categories) {
-    for (const ds of cat.datasets) {
-      for (const db of ds.dashboards) {
-        if (db.purchased) {
-          subs.push({
-            categoryTitle: cat.title,
-            datasetName: ds.name,
-            dashboardName: db.name,
-            dashboardId: db.id,
-            validFrom: "2025-01-15",
-            validTo: "2026-01-14",
-          });
-        }
-      }
-    }
-  }
-  return subs;
-})();
-
-// Group subscriptions by dataset
-const groupedSubscriptions = (() => {
-  const map = new Map<string, typeof mockSubscriptions>();
-  for (const sub of mockSubscriptions) {
-    const key = `${sub.categoryTitle} — ${sub.datasetName}`;
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(sub);
-  }
-  return Array.from(map.entries());
-})();
-
-// All available dashboards for inquiry dropdown
-const allDashboards = (() => {
-  const list: { id: string; label: string }[] = [];
-  for (const cat of categories) {
-    for (const ds of cat.datasets) {
-      for (const db of ds.dashboards) {
-        if (!db.purchased) {
-          list.push({ id: db.id, label: `${cat.title} › ${ds.name} › ${db.name}` });
-        }
-      }
-    }
-  }
-  return list;
-})();
 
 const MyAccount = () => {
   const navigate = useNavigate();
   const { profile: authProfile, refreshProfile } = useAuth();
+  const { hasAccess, activeGrants } = useAccessControl();
   const [isEditing, setIsEditing] = useState(false);
+
+  // Subscriptions: dashboards user has access to, with validity dates
+  const groupedSubscriptions = useMemo(() => {
+    const subs: {
+      categoryTitle: string;
+      datasetName: string;
+      dashboardName: string;
+      dashboardId: string;
+      validFrom: string;
+      validTo: string;
+    }[] = [];
+
+    for (const cat of categories) {
+      for (const ds of cat.datasets) {
+        for (const db of ds.dashboards) {
+          const grant = activeGrants.find(g => g.dashboard_id === db.id);
+          if (grant) {
+            subs.push({
+              categoryTitle: cat.title,
+              datasetName: ds.name,
+              dashboardName: db.name,
+              dashboardId: db.id,
+              validFrom: grant.valid_from.split("T")[0],
+              validTo: grant.valid_to ? grant.valid_to.split("T")[0] : "Ongoing",
+            });
+          }
+        }
+      }
+    }
+
+    const map = new Map<string, typeof subs>();
+    for (const sub of subs) {
+      const key = `${sub.categoryTitle} — ${sub.datasetName}`;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(sub);
+    }
+    return Array.from(map.entries());
+  }, [activeGrants]);
+
+  // Dashboards user doesn't have access to (for inquiry dropdown)
+  const allDashboards = useMemo(() => {
+    const list: { id: string; label: string }[] = [];
+    for (const cat of categories) {
+      for (const ds of cat.datasets) {
+        for (const db of ds.dashboards) {
+          if (!hasAccess(db.id)) {
+            list.push({ id: db.id, label: `${cat.title} › ${ds.name} › ${db.name}` });
+          }
+        }
+      }
+    }
+    return list;
+  }, [hasAccess]);
   
   const profileData = {
     name: authProfile?.name || "",

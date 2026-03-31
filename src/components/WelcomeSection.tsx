@@ -1,6 +1,10 @@
 import { TrendingUp, Database, BarChart3 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const WelcomeSection = () => {
+  const { profile } = useAuth();
+  const firstName = profile?.name?.split(" ")[0] || "there";
+
   const stats = [
     { icon: Database, label: "Datasets", value: "24+" },
     { icon: BarChart3, label: "Dashboards", value: "150+" },
@@ -19,7 +23,7 @@ const WelcomeSection = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div className="space-y-2 text-center md:text-left">
             <h1 className="text-2xl md:text-3xl font-bold text-primary-foreground font-display">
-              Welcome back, John
+              Welcome back, {firstName}
             </h1>
             <p className="text-primary-foreground/70 max-w-lg mx-auto md:mx-0">
               Access comprehensive market research data across industries.

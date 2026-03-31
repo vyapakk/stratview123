@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell, Search, User, Check, X, BarChart3, Database, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useAccessControl } from "@/hooks/useAccessControl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -72,6 +73,7 @@ const initialNotifications: Notification[] = [
 const DashboardHeader = () => {
   const navigate = useNavigate();
   const { profile, signOut } = useAuth();
+  const { hasAccess } = useAccessControl();
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -114,7 +116,7 @@ const DashboardHeader = () => {
               category: cat.title,
               datasetId: ds.id,
               dashboardId: db.id,
-              purchased: db.purchased,
+              purchased: hasAccess(db.id),
               route: activeDashboardRoutes[db.id],
             });
           }
