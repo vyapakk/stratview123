@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, User, Mail, Building2, Phone, Briefcase, Pencil, Save, X, Calendar, Lock, Send, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,25 +13,9 @@ import { toast } from "@/hooks/use-toast";
 import DashboardHeader from "@/components/DashboardHeader";
 import AppFooter from "@/components/AppFooter";
 import { categories } from "@/data/datasets";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
-/**
- * BACKEND INTEGRATION POINT: My Account
- *
- * Replace mock data below with API calls:
- * - GET /api/user/profile → personal info
- * - PUT /api/user/profile → update personal info
- * - GET /api/user/subscriptions → purchased dashboards with validity
- * - POST /api/user/inquiry → subscription inquiry form
- */
-
-// Mock user profile (matches sign-up fields)
-const mockProfile = {
-  name: "John Doe",
-  email: "john.doe@company.com",
-  company: "Acme Aerospace Inc.",
-  designation: "Research Analyst",
-  phone: "+1 (555) 234-5678",
-};
 
 // Mock subscriptions — purchased dashboards with validity
 const mockSubscriptions = (() => {
@@ -90,23 +74,58 @@ const allDashboards = (() => {
 
 const MyAccount = () => {
   const navigate = useNavigate();
+  const { profile: authProfile, refreshProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState(mockProfile);
-  const [editData, setEditData] = useState(mockProfile);
+  
+  const profileData = {
+    name: authProfile?.name || "",
+    email: authProfile?.email || "",
+    company: authProfile?.company || "",
+    designation: authProfile?.designation || "",
+    phone: authProfile?.phone || "",
+  };
+  
+  const [editData, setEditData] = useState(profileData);
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
   const [inquiry, setInquiry] = useState({
     dashboard: "",
     message: "",
   });
 
-  const handleSave = () => {
-    setProfile(editData);
+  useEffect(() => {
+    setEditData({
+      name: authProfile?.name || "",
+      email: authProfile?.email || "",
+      company: authProfile?.company || "",
+      designation: authProfile?.designation || "",
+      phone: authProfile?.phone || "",
+    });
+  }, [authProfile]);
+
+  const handleSave = async () => {
+    if (!authProfile?.id) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        name: editData.name,
+        company: editData.company,
+        designation: editData.designation,
+        phone: editData.phone,
+      })
+      .eq("id", authProfile.id);
+    
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    
+    await refreshProfile();
     setIsEditing(false);
     toast({ title: "Profile updated", description: "Your personal information has been saved." });
   };
 
   const handleCancel = () => {
-    setEditData(profile);
+    setEditData(profileData);
     setIsEditing(false);
   };
 
@@ -176,7 +195,7 @@ const MyAccount = () => {
                   className="h-10"
                 />
               ) : (
-                <p className="text-foreground pt-2.5 font-medium">{profile.name}</p>
+                <p className="text-foreground pt-2.5 font-medium">{profileData.name}</p>
               )}
             </div>
 
@@ -188,7 +207,7 @@ const MyAccount = () => {
                 <Mail className="h-4 w-4" /> Email
               </Label>
               <div className="flex items-center gap-2 pt-2.5">
-                <p className="text-foreground font-medium">{profile.email}</p>
+                <p className="text-foreground font-medium">{profileData.email}</p>
                 <span title="Email cannot be changed"><Lock className="h-3.5 w-3.5 text-muted-foreground/50" /></span>
               </div>
             </div>
@@ -207,7 +226,7 @@ const MyAccount = () => {
                   className="h-10"
                 />
               ) : (
-                <p className="text-foreground pt-2.5 font-medium">{profile.company}</p>
+                <p className="text-foreground pt-2.5 font-medium">{profileData.company}</p>
               )}
             </div>
 
@@ -225,7 +244,7 @@ const MyAccount = () => {
                   className="h-10"
                 />
               ) : (
-                <p className="text-foreground pt-2.5 font-medium">{profile.designation}</p>
+                <p className="text-foreground pt-2.5 font-medium">{profileData.designation}</p>
               )}
             </div>
 
@@ -243,7 +262,7 @@ const MyAccount = () => {
                   className="h-10"
                 />
               ) : (
-                <p className="text-foreground pt-2.5 font-medium">{profile.phone}</p>
+                <p className="text-foreground pt-2.5 font-medium">{profileData.phone}</p>
               )}
             </div>
           </CardContent>
