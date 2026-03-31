@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, User, Mail, Building2, Phone, Briefcase, Pencil, Save, X, Calendar, Lock, Send, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import DashboardHeader from "@/components/DashboardHeader";
 import AppFooter from "@/components/AppFooter";
 import { categories } from "@/data/datasets";
 import { useAuth } from "@/hooks/useAuth";
+import { useAccessControl } from "@/hooks/useAccessControl";
 import { supabase } from "@/integrations/supabase/client";
 
 
