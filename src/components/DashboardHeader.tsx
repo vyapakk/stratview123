@@ -116,7 +116,7 @@ const DashboardHeader = () => {
               category: cat.title,
               datasetId: ds.id,
               dashboardId: db.id,
-              purchased: db.purchased,
+              purchased: hasAccess(db.id),
               route: activeDashboardRoutes[db.id],
             });
           }
