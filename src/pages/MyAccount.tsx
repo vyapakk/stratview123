@@ -23,6 +23,59 @@ const MyAccount = () => {
   const { profile: authProfile, refreshProfile } = useAuth();
   const { hasAccess, activeGrants } = useAccessControl();
   const [isEditing, setIsEditing] = useState(false);
+
+  // Subscriptions: dashboards user has access to, with validity dates
+  const groupedSubscriptions = useMemo(() => {
+    const subs: {
+      categoryTitle: string;
+      datasetName: string;
+      dashboardName: string;
+      dashboardId: string;
+      validFrom: string;
+      validTo: string;
+    }[] = [];
+
+    for (const cat of categories) {
+      for (const ds of cat.datasets) {
+        for (const db of ds.dashboards) {
+          const grant = activeGrants.find(g => g.dashboard_id === db.id);
+          if (grant) {
+            subs.push({
+              categoryTitle: cat.title,
+              datasetName: ds.name,
+              dashboardName: db.name,
+              dashboardId: db.id,
+              validFrom: grant.valid_from.split("T")[0],
+              validTo: grant.valid_to ? grant.valid_to.split("T")[0] : "Ongoing",
+            });
+          }
+        }
+      }
+    }
+
+    const map = new Map<string, typeof subs>();
+    for (const sub of subs) {
+      const key = `${sub.categoryTitle} — ${sub.datasetName}`;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(sub);
+    }
+    return Array.from(map.entries());
+  }, [activeGrants]);
+
+  // Dashboards user doesn't have access to (for inquiry dropdown)
+  const allDashboards = useMemo(() => {
+    const list: { id: string; label: string }[] = [];
+    for (const cat of categories) {
+      for (const ds of cat.datasets) {
+        for (const db of ds.dashboards) {
+          if (!hasAccess(db.id)) {
+            list.push({ id: db.id, label: `${cat.title} › ${ds.name} › ${db.name}` });
+          }
+        }
+      }
+    }
+    return list;
+  }, [hasAccess]);
   
   const profileData = {
     name: authProfile?.name || "",
