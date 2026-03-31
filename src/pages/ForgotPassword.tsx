@@ -35,6 +35,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     setIsLoading(true);
     
+    try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
@@ -46,6 +47,7 @@ const ForgotPassword = () => {
         description: error.message || "Failed to send reset link.",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
     }
   };
