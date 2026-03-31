@@ -16,24 +16,6 @@ import { categories } from "@/data/datasets";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
-/**
- * BACKEND INTEGRATION POINT: My Account
- *
- * Replace mock data below with API calls:
- * - GET /api/user/profile → personal info
- * - PUT /api/user/profile → update personal info
- * - GET /api/user/subscriptions → purchased dashboards with validity
- * - POST /api/user/inquiry → subscription inquiry form
- */
-
-// Mock user profile (matches sign-up fields)
-const mockProfile = {
-  name: "John Doe",
-  email: "john.doe@company.com",
-  company: "Acme Aerospace Inc.",
-  designation: "Research Analyst",
-  phone: "+1 (555) 234-5678",
-};
 
 // Mock subscriptions — purchased dashboards with validity
 const mockSubscriptions = (() => {
