@@ -18,64 +18,10 @@ import { useAccessControl } from "@/hooks/useAccessControl";
 import { supabase } from "@/integrations/supabase/client";
 
 
-// Mock subscriptions — purchased dashboards with validity
-const mockSubscriptions = (() => {
-  const subs: {
-    categoryTitle: string;
-    datasetName: string;
-    dashboardName: string;
-    dashboardId: string;
-    validFrom: string;
-    validTo: string;
-  }[] = [];
-  for (const cat of categories) {
-    for (const ds of cat.datasets) {
-      for (const db of ds.dashboards) {
-        if (db.purchased) {
-          subs.push({
-            categoryTitle: cat.title,
-            datasetName: ds.name,
-            dashboardName: db.name,
-            dashboardId: db.id,
-            validFrom: "2025-01-15",
-            validTo: "2026-01-14",
-          });
-        }
-      }
-    }
-  }
-  return subs;
-})();
-
-// Group subscriptions by dataset
-const groupedSubscriptions = (() => {
-  const map = new Map<string, typeof mockSubscriptions>();
-  for (const sub of mockSubscriptions) {
-    const key = `${sub.categoryTitle} — ${sub.datasetName}`;
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(sub);
-  }
-  return Array.from(map.entries());
-})();
-
-// All available dashboards for inquiry dropdown
-const allDashboards = (() => {
-  const list: { id: string; label: string }[] = [];
-  for (const cat of categories) {
-    for (const ds of cat.datasets) {
-      for (const db of ds.dashboards) {
-        if (!db.purchased) {
-          list.push({ id: db.id, label: `${cat.title} › ${ds.name} › ${db.name}` });
-        }
-      }
-    }
-  }
-  return list;
-})();
-
 const MyAccount = () => {
   const navigate = useNavigate();
   const { profile: authProfile, refreshProfile } = useAuth();
+  const { hasAccess, activeGrants } = useAccessControl();
   const [isEditing, setIsEditing] = useState(false);
   
   const profileData = {
