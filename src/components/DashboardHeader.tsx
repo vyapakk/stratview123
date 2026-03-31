@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Search, User, Check, X, BarChart3, Database, Lock } from "lucide-react";
+import { Bell, Search, User, Check, X, BarChart3, Database, Lock, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAccessControl } from "@/hooks/useAccessControl";
 import { Button } from "@/components/ui/button";
