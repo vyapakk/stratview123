@@ -72,7 +72,7 @@ const initialNotifications: Notification[] = [
 
 const DashboardHeader = () => {
   const navigate = useNavigate();
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, isAdmin } = useAuth();
   const { hasAccess } = useAccessControl();
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [isOpen, setIsOpen] = useState(false);
