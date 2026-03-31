@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { categories } from "@/data/datasets";
+import { useAccessControl } from "@/hooks/useAccessControl";
+import { useMemo } from "react";
 
 const iconBgStyles: Record<string, string> = {
   teal: "bg-primary text-primary-foreground",
@@ -14,22 +16,24 @@ const iconBgStyles: Record<string, string> = {
 
 const SubscriptionsSection = () => {
   const navigate = useNavigate();
+  const { hasAccess } = useAccessControl();
 
-  // Show datasets that have at least one purchased dashboard
-  const subscribedDatasets = categories.flatMap((category) =>
-    category.datasets
-      .filter((dataset) => dataset.dashboards.some((d) => d.purchased))
-      .map((dataset) => {
-        const purchasedCount = dataset.dashboards.filter((d) => d.purchased).length;
-        return {
-          ...dataset,
-          category: category.title,
-          categoryIcon: category.icon,
-          categoryColor: category.color,
-          purchasedCount,
-        };
-      })
-  );
+  // Show datasets that have at least one accessible dashboard
+  const subscribedDatasets = useMemo(() => 
+    categories.flatMap((category) =>
+      category.datasets
+        .filter((dataset) => dataset.dashboards.some((d) => hasAccess(d.id)))
+        .map((dataset) => {
+          const purchasedCount = dataset.dashboards.filter((d) => hasAccess(d.id)).length;
+          return {
+            ...dataset,
+            category: category.title,
+            categoryIcon: category.icon,
+            categoryColor: category.color,
+            purchasedCount,
+          };
+        })
+    ), [hasAccess]);
 
   return (
     <section className="mb-10">

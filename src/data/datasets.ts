@@ -253,4 +253,19 @@ function mergeRegisteredDashboards() {
   return result;
 }
 
+/** Static categories (with hardcoded purchased flags from config) */
 export const categories = mergeRegisteredDashboards();
+
+/** Returns categories with `purchased` dynamically set based on access checker */
+export function getCategoriesWithAccess(hasAccess: (dashboardId: string) => boolean) {
+  return categories.map(cat => ({
+    ...cat,
+    datasets: cat.datasets.map(ds => ({
+      ...ds,
+      dashboards: ds.dashboards.map(db => ({
+        ...db,
+        purchased: hasAccess(db.id),
+      })),
+    })),
+  }));
+}
