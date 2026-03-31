@@ -69,30 +69,6 @@ const SignUp = () => {
     setError("");
   };
 
-  /**
-   * BACKEND INTEGRATION POINT: User Registration
-   * 
-   * Replace the simulated delay with your actual registration API call.
-   * Expected payload: {
-   *   name: string,
-   *   company: string,
-   *   designation: string,
-   *   phone: string,
-   *   email: string,
-   *   password: string,
-   *   industries: string[]
-   * }
-   * 
-   * Example integration:
-   * const response = await fetch('/api/auth/register', {
-   *   method: 'POST',
-   *   headers: { 'Content-Type': 'application/json' },
-   *   body: JSON.stringify({ ...formData, industries: selectedIndustries })
-   * });
-   * 
-   * On success: redirect to login or auto-login user
-   * On error: display validation errors to user
-   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -112,21 +88,30 @@ const SignUp = () => {
     }
 
     setIsLoading(true);
+    setError("");
     
     try {
-      // TODO: Replace with actual API call
-      // const response = await authService.register({
-      //   ...formData,
-      //   industries: selectedIndustries
-      // });
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulated delay
-      
-      console.log('Registration attempt:', { ...formData, industries: selectedIndustries });
-      // TODO: Handle successful registration (redirect, show success message, etc.)
-    } catch (error) {
-      // TODO: Handle registration error (show validation errors, etc.)
-      console.error('Registration failed:', error);
-      setError('Registration failed. Please try again.');
+      const { error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.name,
+            company: formData.company,
+            designation: formData.designation,
+            phone: formData.phone,
+            industry: selectedIndustries.join(", "),
+          },
+          emailRedirectTo: window.location.origin,
+        },
+      });
+      if (error) throw error;
+      toast({
+        title: "Account created!",
+        description: "Please check your email to confirm your account before signing in.",
+      });
+    } catch (error: any) {
+      setError(error.message || "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
