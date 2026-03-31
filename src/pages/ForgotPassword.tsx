@@ -35,17 +35,17 @@ const ForgotPassword = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    try {
-      // TODO: Replace with actual API call
-      // const response = await authService.forgotPassword({ email });
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulated delay
-      
-      console.log('Password reset requested for:', email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
       setIsSubmitted(true);
-    } catch (error) {
-      // TODO: Handle error (show toast, set error state, etc.)
-      console.error('Password reset request failed:', error);
-    } finally {
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send reset link.",
+        variant: "destructive",
+      });
       setIsLoading(false);
     }
   };
