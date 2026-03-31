@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, Lock, LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useAccessControl } from "@/hooks/useAccessControl";
 
 interface Dashboard {
   id: string;
@@ -38,6 +38,7 @@ const iconBgStyles: Record<string, string> = {
 
 const DatasetList = ({ categories, activeTab }: DatasetListProps) => {
   const navigate = useNavigate();
+  const { hasAccess } = useAccessControl();
 
   const filteredCategories =
     activeTab === "all"
@@ -57,7 +58,7 @@ const DatasetList = ({ categories, activeTab }: DatasetListProps) => {
     <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
       {datasetsWithCategory.map((dataset, index) => {
         const Icon = dataset.categoryIcon;
-        const isLocked = !dataset.dashboards.some((d) => d.purchased);
+        const isLocked = !dataset.dashboards.some((d) => hasAccess(d.id));
         return (
           <Card
             key={dataset.id}
