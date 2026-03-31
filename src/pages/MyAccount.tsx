@@ -74,23 +74,58 @@ const allDashboards = (() => {
 
 const MyAccount = () => {
   const navigate = useNavigate();
+  const { profile: authProfile, refreshProfile } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [profile, setProfile] = useState(mockProfile);
-  const [editData, setEditData] = useState(mockProfile);
+  
+  const profileData = {
+    name: authProfile?.name || "",
+    email: authProfile?.email || "",
+    company: authProfile?.company || "",
+    designation: authProfile?.designation || "",
+    phone: authProfile?.phone || "",
+  };
+  
+  const [editData, setEditData] = useState(profileData);
   const [inquirySubmitted, setInquirySubmitted] = useState(false);
   const [inquiry, setInquiry] = useState({
     dashboard: "",
     message: "",
   });
 
-  const handleSave = () => {
-    setProfile(editData);
+  useEffect(() => {
+    setEditData({
+      name: authProfile?.name || "",
+      email: authProfile?.email || "",
+      company: authProfile?.company || "",
+      designation: authProfile?.designation || "",
+      phone: authProfile?.phone || "",
+    });
+  }, [authProfile]);
+
+  const handleSave = async () => {
+    if (!authProfile?.id) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        name: editData.name,
+        company: editData.company,
+        designation: editData.designation,
+        phone: editData.phone,
+      })
+      .eq("id", authProfile.id);
+    
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    
+    await refreshProfile();
     setIsEditing(false);
     toast({ title: "Profile updated", description: "Your personal information has been saved." });
   };
 
   const handleCancel = () => {
-    setEditData(profile);
+    setEditData(profileData);
     setIsEditing(false);
   };
 
