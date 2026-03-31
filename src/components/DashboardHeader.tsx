@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Search, User, Check, X, BarChart3, Database, Lock } from "lucide-react";
+import { Bell, Search, User, Check, X, BarChart3, Database, Lock, Shield } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAccessControl } from "@/hooks/useAccessControl";
 import { Button } from "@/components/ui/button";
@@ -72,7 +72,7 @@ const initialNotifications: Notification[] = [
 
 const DashboardHeader = () => {
   const navigate = useNavigate();
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, isAdmin } = useAuth();
   const { hasAccess } = useAccessControl();
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [isOpen, setIsOpen] = useState(false);
@@ -340,6 +340,15 @@ const DashboardHeader = () => {
                 <User className="h-4 w-4 mr-2" />
                 My Account
               </DropdownMenuItem>
+              {isAdmin && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/admin")}>
+                    <Shield className="h-4 w-4 mr-2" />
+                    Admin Panel
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-destructive" onClick={handleLogout}>
                 Log out

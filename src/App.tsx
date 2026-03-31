@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { RouteScrollToTop } from "@/components/RouteScrollToTop";
 import { AuthProvider } from "@/hooks/useAuth";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -18,6 +18,10 @@ import Terms from "./pages/Terms";
 import Disclaimer from "./pages/Disclaimer";
 import NotFound from "./pages/NotFound";
 import QueryFormTab from "@/components/QueryFormTab";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminAccess from "./pages/admin/AdminAccess";
+import AdminQueries from "./pages/admin/AdminQueries";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +44,13 @@ const App = () => (
             <Route path="/dataset/:datasetId" element={<ProtectedRoute><DatasetDetail /></ProtectedRoute>} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/disclaimer" element={<Disclaimer />} />
+            {/* Admin panel */}
+            <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminLayout /></ProtectedRoute>}>
+              <Route index element={<Navigate to="/admin/users" replace />} />
+              <Route path="users" element={<AdminUsers />} />
+              <Route path="access" element={<AdminAccess />} />
+              <Route path="queries" element={<AdminQueries />} />
+            </Route>
             {/* Auto-discovered dashboard routes */}
             {dashboardRegistry.map(({ routePath, component: Component }) => (
               <Route key={routePath} path={routePath} element={<ProtectedRoute><Component /></ProtectedRoute>} />
