@@ -1,53 +1,84 @@
 
 
-## Phase 1: Database Schema Setup
+## Phase 2: Wire Up Authentication
 
-### Tables to Create
+Replace all mock auth with real Supabase Auth. Create auth context, protect routes, and wire up existing pages.
 
-1. **`profiles`** — User info, auto-created on signup
-   - `id` (uuid, PK, FK → auth.users.id, ON DELETE CASCADE)
-   - `name` (text), `email` (text), `company` (text), `designation` (text), `phone` (text), `industry` (text)
-   - `is_active` (boolean, default true)
-   - `created_at` (timestamptz), `updated_at` (timestamptz)
+---
 
-2. **`user_roles`** — Separate roles table (per security rules)
-   - `id` (uuid, PK)
-   - `user_id` (uuid, FK → auth.users, NOT NULL, ON DELETE CASCADE)
-   - `role` (app_role enum: `admin`, `user`)
-   - Unique on (user_id, role)
+### New Files
 
-3. **`dashboard_access`** — Per-user dashboard grants
-   - `id` (uuid, PK)
-   - `user_id` (uuid, FK → auth.users, NOT NULL)
-   - `dashboard_id` (text, NOT NULL) — matches catalog dashboardId strings like `ai-floor-panels`
-   - `granted_by` (uuid, FK → auth.users, nullable)
-   - `valid_from` (timestamptz, default now), `valid_to` (timestamptz, nullable)
-   - `created_at` (timestamptz)
-   - Unique on (user_id, dashboard_id)
+**1. `src/hooks/useAuth.tsx`** — Auth context provider
+- Uses `supabase.auth.onAuthStateChange()` listener (set up BEFORE `getSession()`)
+- Stores `session`, `user`, `profile` (from profiles table), `role` (from user_roles table), `isLoading`
+- Exposes `signOut()`, `isAdmin` boolean
+- Fetches profile and role after auth state changes
+- Provides `AuthProvider` wrapper and `useAuth()` hook
 
-4. **`query_submissions`** — "Got a Query?" form data
-   - `id` (uuid, PK)
-   - `user_id` (uuid, FK → auth.users, nullable)
-   - `dashboard_title` (text), `name` (text), `email` (text), `phone` (text), `designation` (text), `company` (text), `query` (text)
-   - `status` (query_status enum: `new`, `in_progress`, `resolved`, default `new`)
-   - `created_at` (timestamptz)
+**2. `src/pages/ResetPassword.tsx`** — New password reset page
+- Checks for `type=recovery` in URL hash params
+- Form with new password + confirm password (reuse existing password validation UI pattern from SignUp)
+- Calls `supabase.auth.updateUser({ password })` on submit
+- Redirects to login on success
+- Same split-panel layout as ForgotPassword for consistency
 
-### Security
+**3. `src/components/ProtectedRoute.tsx`** — Route guard component
+- Wraps children, checks `useAuth()` for active session
+- If loading, shows spinner
+- If no session, redirects to `/`
+- Optional `requireAdmin` prop that also checks role
 
-- **Enum types**: `app_role` (admin, user), `query_status` (new, in_progress, resolved)
-- **`has_role()` function**: Security definer function to check roles without RLS recursion
-- **Trigger**: Auto-create `profiles` row when a new user signs up via `auth.users`
-- **RLS policies**:
-  - `profiles`: Users read/update own; admins read all
-  - `user_roles`: Admins full access; users read own role
-  - `dashboard_access`: Admins full CRUD; users read own grants
-  - `query_submissions`: Anyone can insert; users read own; admins read all + update status
+---
 
-### Single SQL Migration
+### Modified Files
 
-One migration containing all enums, tables, function, trigger, and RLS policies. No code file changes in this phase — purely database schema.
+**4. `src/App.tsx`**
+- Wrap everything inside `<BrowserRouter>` with `<AuthProvider>`
+- Add `/reset-password` route
+- Wrap `/dashboard`, `/my-account`, `/dataset/:datasetId`, and all dashboard registry routes with `<ProtectedRoute>`
+
+**5. `src/components/LoginForm.tsx`**
+- Replace mock `setTimeout` with `supabase.auth.signInWithPassword({ email, password })`
+- Show error toast on failure (invalid credentials, etc.)
+- On success, navigation happens automatically via auth state change
+
+**6. `src/pages/SignUp.tsx`**
+- Replace mock `setTimeout` with `supabase.auth.signUp({ email, password, options: { data: { name, company, designation, phone, industry }, emailRedirectTo: window.location.origin } })`
+- Show success message ("Check your email to confirm") or error
+- The `handle_new_user` trigger auto-creates profile + assigns 'user' role
+
+**7. `src/pages/ForgotPassword.tsx`**
+- Replace mock with `supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset-password' })`
+- Rest of the UI stays the same
+
+**8. `src/components/DashboardHeader.tsx`**
+- Replace hardcoded "John Doe" with `useAuth().profile?.name`
+- Replace mock `handleLogout` with `supabase.auth.signOut()` + navigate to `/`
+
+**9. `src/pages/MyAccount.tsx`**
+- Replace `mockProfile` with real data from `useAuth().profile`
+- Wire `handleSave` to `supabase.from('profiles').update(...)` 
+- Email remains read-only (from auth)
+
+---
+
+### Technical Details
+
+- Auth listener pattern: `onAuthStateChange` registered first, then `getSession()` called — prevents race conditions
+- Session persistence: already configured in `supabase/client.ts` with `persistSession: true`
+- Profile fetch uses `.select('*').eq('id', user.id).single()` on the profiles table
+- Role check uses the existing `has_role()` DB function via `.rpc('has_role', { _user_id, _role: 'admin' })`
+- No database changes needed — Phase 1 schema is complete
+
+---
 
 ### What This Enables
 
-After Phase 1, the database is ready for Phase 2 (wiring authentication) and Phase 3/4 (access control + admin panel). No frontend changes are needed yet.
+After Phase 2:
+- Real user signup with email confirmation
+- Real login/logout with session persistence
+- Password reset flow (forgot → email → reset page)
+- Protected routes (unauthenticated users redirected to login)
+- Real user profile on My Account and header
+- Foundation ready for Phase 3 (access control) and Phase 4 (admin panel)
 
