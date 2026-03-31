@@ -195,7 +195,7 @@ const MyAccount = () => {
                   className="h-10"
                 />
               ) : (
-                <p className="text-foreground pt-2.5 font-medium">{profile.name}</p>
+                <p className="text-foreground pt-2.5 font-medium">{profileData.name}</p>
               )}
             </div>
 
@@ -207,7 +207,7 @@ const MyAccount = () => {
                 <Mail className="h-4 w-4" /> Email
               </Label>
               <div className="flex items-center gap-2 pt-2.5">
-                <p className="text-foreground font-medium">{profile.email}</p>
+                <p className="text-foreground font-medium">{profileData.email}</p>
                 <span title="Email cannot be changed"><Lock className="h-3.5 w-3.5 text-muted-foreground/50" /></span>
               </div>
             </div>
@@ -226,7 +226,7 @@ const MyAccount = () => {
                   className="h-10"
                 />
               ) : (
-                <p className="text-foreground pt-2.5 font-medium">{profile.company}</p>
+                <p className="text-foreground pt-2.5 font-medium">{profileData.company}</p>
               )}
             </div>
 
@@ -244,7 +244,7 @@ const MyAccount = () => {
                   className="h-10"
                 />
               ) : (
-                <p className="text-foreground pt-2.5 font-medium">{profile.designation}</p>
+                <p className="text-foreground pt-2.5 font-medium">{profileData.designation}</p>
               )}
             </div>
 
@@ -262,7 +262,7 @@ const MyAccount = () => {
                   className="h-10"
                 />
               ) : (
-                <p className="text-foreground pt-2.5 font-medium">{profile.phone}</p>
+                <p className="text-foreground pt-2.5 font-medium">{profileData.phone}</p>
               )}
             </div>
           </CardContent>
